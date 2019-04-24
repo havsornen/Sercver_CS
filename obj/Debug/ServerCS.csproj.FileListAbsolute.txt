@@ -1,0 +1,7 @@
+C:\Users\Reiden El-mir\source\repos\ServerCS\ServerCS\bin\Debug\ServerCS.exe.config
+C:\Users\Reiden El-mir\source\repos\ServerCS\ServerCS\bin\Debug\ServerCS.exe
+C:\Users\Reiden El-mir\source\repos\ServerCS\ServerCS\bin\Debug\ServerCS.pdb
+C:\Users\Reiden El-mir\source\repos\ServerCS\ServerCS\obj\Debug\ServerCS.csprojAssemblyReference.cache
+C:\Users\Reiden El-mir\source\repos\ServerCS\ServerCS\obj\Debug\ServerCS.csproj.CoreCompileInputs.cache
+C:\Users\Reiden El-mir\source\repos\ServerCS\ServerCS\obj\Debug\ServerCS.exe
+C:\Users\Reiden El-mir\source\repos\ServerCS\ServerCS\obj\Debug\ServerCS.pdb
