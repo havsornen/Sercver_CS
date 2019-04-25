@@ -13,6 +13,7 @@ namespace ServerCS
 {
     class Program
     {
+        static int m_DebugImageNr = 0;
         private static WebSocketServer m_wsServer;
         private static string[] m_ImageList = new string[100000];
         private static string[] m_ClientFeedList = new string[20];
@@ -34,6 +35,7 @@ namespace ServerCS
             Console.ReadKey();
           
         }
+
         
         private static void PackageBytesAndSend(WebSocketSession _Session,string _Data)
         {
@@ -47,7 +49,7 @@ namespace ServerCS
         }
         private static void WsServer_NewSessionConnected(WebSocketSession _Session)
         {
-            m_ClientFeedList[m_NrOfClientsConnected] += _Session.RemoteEndPoint;
+          //  m_ClientFeedList[m_NrOfClientsConnected] += _Session.RemoteEndPoint;
             m_NrOfClientsConnected++;
         }
         private static void WsServer_NewMessageReceived(WebSocketSession _Session, string _Value)
@@ -61,7 +63,11 @@ namespace ServerCS
             if (_imagevalue.Length<1000)
             {
                 PackageBytesAndSend(_Session, m_ImageList[_imageNrInt]);
-                Console.WriteLine(m_ImageList[_imageNrInt]);
+                Console.WriteLine(m_ImageList[_imageNrInt]+"                    " +
+                    "                     " +
+                    "DEBUG IMAGE NR" +
+                   m_DebugImageNr + "Client ip: "+_Session.RemoteEndPoint);
+                m_DebugImageNr++;
 
             }
 
@@ -71,7 +77,17 @@ namespace ServerCS
         }
         private static void WsServer_SessionClosed(WebSocketSession _session, SuperSocket.SocketBase.CloseReason _value)
         {
-            _session.Send("Stream is now closed");
+            _session.Send("Your session has now been closed, thanks for participating!"+ "The reason for the stream closing is the following: "+_value.ToString());
+            
+            for(int i =0;i<m_NrOfClientsConnected;i++)
+            {
+                if(m_ClientFeedList[i]==_session.RemoteEndPoint.ToString())
+                {
+                    m_ClientFeedList[i] = m_ClientFeedList[m_NrOfClientsConnected - 1];
+                    m_ClientFeedList[m_NrOfClientsConnected - 1] = "";
+                }
+            }
+            m_NrOfClientsConnected--;
         }
     }
 }
