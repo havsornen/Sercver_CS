@@ -85,10 +85,9 @@ namespace ServerCS
             string _RemoteClient = _Session.RemoteEndPoint.ToString();
             int _imageNrInt = Convert.ToInt32(_imageNrString);
             string _imagevalue = _Value.Substring(9, _Value.Length - 9);
-            m_ImageList[_imageNrInt] += _RemoteClient+';'+_imagevalue+',';
-            m_ImageListOutputTest[_imageNrInt] += _imagevalue;
+            m_ImageList[_imageNrInt] += _imageNrInt+"_"+ _RemoteClient+';'+_imagevalue+',';
 
-            if (_imagevalue.Length<1000)
+            if (_imagevalue.Length<1000&&_Value!="")
             {
                 PackageBytesAndSend(_Session, m_ImageList[_imageNrInt],_sessionIdInt);
                 Console.WriteLine(m_ImageList[_imageNrInt] + "                    " +
