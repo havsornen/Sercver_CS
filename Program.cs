@@ -55,7 +55,7 @@ namespace ServerCS
             m_wsServer.NewDataReceived += WsServer_NewDataReceived;
             m_wsServer.SessionClosed += WsServer_SessionClosed;
             m_wsServer.Start();
-            Console.ReadKey();
+            while (true) { };
           
         }
 
@@ -66,15 +66,13 @@ namespace ServerCS
             _Payload = _Data.Split(',');
             foreach (string _SplitPayload in _Payload)
             {
-                m_WsSessions[_sessionId].Send(_SplitPayload);
+                _Session.Send(_SplitPayload);
             }
         }
         private static void WsServer_NewSessionConnected(WebSocketSession _Session)
         {
-           m_ClientFeedList[m_NrOfClientsConnected] += _Session.RemoteEndPoint;
-            m_NrOfClientsConnected++;
-            m_WsSessions[1] = _Session;
-            Console.WriteLine("New user connected: " + _Session.RemoteEndPoint);
+            m_WsSessions[m_NrOfClientsConnected++] = _Session;
+            Console.WriteLine("New user connected: " + _Session.RemoteEndPoint+ "Session ID "+_Session.SessionID.ToString());
 
         }
         private static void WsServer_NewMessageReceived(WebSocketSession _Session, string _Value)
@@ -89,11 +87,14 @@ namespace ServerCS
 
             if (_imagevalue.Length<1000&&_Value!="")
             {
-                PackageBytesAndSend(_Session, m_ImageList[_imageNrInt],_sessionIdInt);
+                for (int i =0; i < m_NrOfClientsConnected;i++)
+                {
+                    PackageBytesAndSend(m_WsSessions[i], m_ImageList[_imageNrInt], _sessionIdInt);
+                }
                 Console.WriteLine(m_ImageList[_imageNrInt] + "                    " +
                     "                     " +
                     "DEBUG IMAGE NR" +
-                   m_DebugImageNr + "Client ip: " + _Session.RemoteEndPoint);
+                   m_DebugImageNr + "Client ip: " + _Session.RemoteEndPoint + "SESSION ID "+_Session.SessionID.ToString());
                 m_DebugImageNr++;
             }
 
@@ -105,12 +106,18 @@ namespace ServerCS
         {
             _session.Send("Your session has now been closed, thanks for participating!"+ "The reason for the stream closing is the following: "+_value.ToString());
             
+          
             for(int i =0;i<m_NrOfClientsConnected;i++)
             {
-                if(m_ClientFeedList[i]==_session.RemoteEndPoint.ToString())
+                if(m_WsSessions[i].ToString()==_session.SessionID)
                 {
-                    m_ClientFeedList[i] = m_ClientFeedList[m_NrOfClientsConnected - 1];
-                    m_ClientFeedList[m_NrOfClientsConnected - 1] = "";
+                    m_WsSessions[i] = m_WsSessions[m_NrOfClientsConnected - 1];
+                    WebSocketSession[] tempArr = new WebSocketSession[m_NrOfClientsConnected];
+                    for(int x =0;x<m_NrOfClientsConnected-1;x++)
+                    {
+                        tempArr[x] = m_WsSessions[x];
+                    }
+                    m_WsSessions = tempArr;
                 }
             }
             m_NrOfClientsConnected--;
