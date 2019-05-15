@@ -14,11 +14,13 @@ namespace ServerCS
     {
         static int m_DebugImageNr = 0;
         private static WebSocketServer m_wsServer;
-        private static string[] m_ImageList = new string[100000];
-        private static string[] m_ImageListOutputTest = new string[100000];
-        
-        private static string[] m_ClientFeedList = new string[20];
+        private static string[] m_ImageListOne = new string[100000];
+        private static string[] m_ImageListTwo = new string[100000];
+        private static string[] m_ImageListOutputTestOne = new string[100000];
+        private static string[] m_ImageListOutputTestTwo = new string[100000];
         private static int m_NrOfClientsConnected = 0;
+        private static string[] m_ClientIpAddress = new string[2];
+        private static string[] m_ClientIpComparisonString = new string[2];
         private static WebSocketSession[] m_WsSessions = new WebSocketSession[10];
 
         static void Main(string[] args)
@@ -26,8 +28,15 @@ namespace ServerCS
             //initialise array that will be handling the image data
             for(int i =0;i<100000;i++)
             {
-                m_ImageList[i] = "";
-                m_ImageListOutputTest[i] = "";
+                m_ImageListOne[i] = "";
+                m_ImageListTwo[i] = "";
+                m_ImageListOutputTestOne[i] = "";
+                m_ImageListOutputTestTwo[i] = "";
+            }
+            for (int i =0;i<2;i++)
+            {
+                m_ClientIpAddress[i] = "";
+                m_ClientIpComparisonString[i] = "";
             }
             m_wsServer = new WebSocketServer();
 
@@ -71,7 +80,8 @@ namespace ServerCS
         }
         private static void WsServer_NewSessionConnected(WebSocketSession _Session)
         {
-            m_WsSessions[m_NrOfClientsConnected++] = _Session;
+            m_WsSessions[m_NrOfClientsConnected] = _Session;
+            m_ClientIpAddress[m_NrOfClientsConnected++] = _Session.RemoteEndPoint.ToString();
             Console.WriteLine("New user connected: " + _Session.RemoteEndPoint+ "Session ID "+_Session.SessionID.ToString());
 
         }
@@ -83,19 +93,38 @@ namespace ServerCS
             string _RemoteClient = _Session.RemoteEndPoint.ToString();
             int _imageNrInt = Convert.ToInt32(_imageNrString);
             string _imagevalue = _Value.Substring(9, _Value.Length - 9);
-            m_ImageList[_imageNrInt] += _imageNrInt+"_"+ _RemoteClient+';'+_imagevalue+',';
-
+            if (_Session.RemoteEndPoint.ToString() == m_ClientIpAddress[0])
+            {
+                m_ImageListTwo[_imageNrInt] += _imageNrInt + "_" + _RemoteClient + ';' + _imagevalue + ',';
+                m_ImageListOutputTestOne[_imageNrInt] += _imagevalue;
+            }
+            else
+            {
+                m_ImageListOne[_imageNrInt] += _imageNrInt + "_" + _RemoteClient + ';' + _imagevalue + ',';
+                m_ImageListOutputTestTwo[_imageNrInt] += _imagevalue;
+            }
             if (_imagevalue.Length<1000&&_Value!="")
             {
-                for (int i =0; i < m_NrOfClientsConnected;i++)
+                if(_Session.RemoteEndPoint.ToString()==m_ClientIpAddress[0])
                 {
-                    PackageBytesAndSend(m_WsSessions[i], m_ImageList[_imageNrInt], _sessionIdInt);
-                }
-                Console.WriteLine(m_ImageList[_imageNrInt] + "                    " +
+                    PackageBytesAndSend(m_WsSessions[1], m_ImageListOne[_imageNrInt], _sessionIdInt);
+                    Console.WriteLine(m_ImageListOutputTestOne[_imageNrInt] + "                    " +
                     "                     " +
                     "DEBUG IMAGE NR" +
-                   m_DebugImageNr + "Client ip: " + _Session.RemoteEndPoint + "SESSION ID "+_Session.SessionID.ToString());
-                m_DebugImageNr++;
+                   m_DebugImageNr + "Client ip: " + _Session.RemoteEndPoint + "SESSION ID " + _Session.SessionID.ToString());
+                    m_DebugImageNr++;
+                }
+                else
+                {
+                    PackageBytesAndSend(m_WsSessions[0], m_ImageListTwo[_imageNrInt], _sessionIdInt);
+                    Console.WriteLine(m_ImageListOutputTestTwo[_imageNrInt] + "                    " +
+                    "                     " +
+                    "DEBUG IMAGE NR" +
+                   m_DebugImageNr + "Client ip: " + _Session.RemoteEndPoint + "SESSION ID " + _Session.SessionID.ToString());
+                    m_DebugImageNr++;
+                }
+
+                
             }
 
         }
